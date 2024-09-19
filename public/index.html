@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Microsoft Graph Profile Fetcher</title>
+    <script src="https://alcdn.msauth.net/browser/2.14.2/js/msal-browser.min.js"></script>
+    <script src="/js/ewsCalls.js"></script> <!-- Include the EWS script -->
+</head>
+<body>
+    <h1>Microsoft Graph Profile Fetcher</h1>
+    <button id="login">Login with Microsoft</button>
+    <pre id="profile"></pre>
+
+    <button id="fetchRawJson" style="display:none;">Fetch Raw JSON</button>
+    <pre id="rawJson"></pre>
+
+    <script>
+        const msalConfig = {
+            auth: {
+                clientId: '{{CLIENT_ID}}',  // Injected from server
+                authority: '{{AAD_ENDPOINT}}{{TENANT_ID}}',  // Injected from server
+                redirectUri: window.location.origin
+            }
+        };
+
+        const msalInstance = new msal.PublicClientApplication(msalConfig);
+        let account;
+
+        document.getElementById('login').addEventListener('click', () => {
+            msalInstance.loginPopup({
+                scopes: ["user.read"]
+            }).then(response => {
+                console.log('Login response:', response);
+                account = response.account;
+                msalInstance.setActiveAccount(account);  // Set the active account
+                fetchProfile(response.accessToken);
+                document.getElementById('fetchRawJson').style.display = 'block';  // Show Fetch Raw JSON button
+            }).catch(error => {
+                console.error('Login error:', error);
+            });
+        });
+
+        document.getElementById('fetchRawJson').addEventListener('click', () => {
+            fetchRawJson();  // Call function from ewsCalls.js
+        });
+
+        function fetchProfile(token) {
+            fetch('https://graph.microsoft.com/v1.0/me', {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to fetch profile');
+                }
+                return response.json();
+            })
+            .then(profile => {
+                document.getElementById('profile').innerText = JSON.stringify(profile, null, 2);
+            })
+            .catch(error => {
+                console.error('Error fetching profile:', error);
+            });
+        }
+    </script>
+</body>
+</html>
