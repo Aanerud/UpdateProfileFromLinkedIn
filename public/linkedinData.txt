@@ -1,0 +1,38 @@
+{
+  "paging": {
+    "start": 0,
+    "count": 10,
+    "links": [
+      {
+        "type": "application/json",
+        "rel": "next",
+        "href": "/rest/memberSnapshotData?count=10&q=criteria&start=1"
+      }
+    ],
+    "total": 28
+  },
+  "elements": [
+    {
+      "snapshotData": [
+        {
+          "Issuing authority": "N/A",
+          "Year of birth": "N/A",
+          "Email address": "aaanerud@microsoft.com",
+          "City": "N/A",
+          "Last name": "N/A",
+          "Organization name": "Microsoft",
+          "Expiry date": "2024-04-27",
+          "State": "N/A",
+          "Document type": "N/A",
+          "Country": "N/A",
+          "First name": "N/A",
+          "Verified date": "2023-04-28",
+          "Middle name": "N/A",
+          "Verification service provider": "N/A",
+          "Verification type": "Work Verification"
+        }
+      ],
+      "snapshotDomain": "TRUSTED_GRAPH"
+    }
+  ]
+}

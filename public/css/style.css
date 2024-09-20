@@ -1,0 +1,23 @@
+/* public/css/style.css */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+}
+
+#terminal {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 45%;
+    height: 100%;
+    background-color: black;
+    color: green;
+    font-family: monospace;
+    overflow-y: scroll;
+    padding: 10px;
+}
+
+button {
+    margin: 10px;
+}

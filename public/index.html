@@ -1,19 +1,24 @@
+<!-- public/index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Microsoft Graph Profile Fetcher</title>
+    <title>Profile Enrichment App</title>
     <script src="https://alcdn.msauth.net/browser/2.14.2/js/msal-browser.min.js"></script>
-    <script src="/js/ewsCalls.js"></script> <!-- Include the EWS script -->
 </head>
 <body>
-    <h1>Microsoft Graph Profile Fetcher</h1>
-    <button id="login">Login with Microsoft</button>
-    <pre id="profile"></pre>
+    <h1>Profile Enrichment App</h1>
 
-    <button id="fetchRawJson" style="display:none;">Fetch Raw JSON</button>
-    <pre id="rawJson"></pre>
+    <!-- Buttons -->
+    <button id="loginMicrosoft">Sign in with Microsoft</button>
+    <button id="loginLinkedIn">Sign in with LinkedIn</button>
+    <button id="getLinkedInData">Get LinkedIn Data</button>
+    <button id="processData">Process LinkedIn Data</button>
+    <button id="updateProfile">POST Profile Information</button>
+
+    <!-- Terminal-like interface -->
+    <div id="terminal" style="position:absolute; right:0; top:0; width:45%; height:100%; background-color:black; color:green; font-family:monospace; overflow-y:scroll; padding:10px;">
+    </div>
 
     <script>
         const msalConfig = {
@@ -25,45 +30,118 @@
         };
 
         const msalInstance = new msal.PublicClientApplication(msalConfig);
-        let account;
 
-        document.getElementById('login').addEventListener('click', () => {
-            msalInstance.loginPopup({
-                scopes: ["user.read"]
-            }).then(response => {
-                console.log('Login response:', response);
-                account = response.account;
-                msalInstance.setActiveAccount(account);  // Set the active account
-                fetchProfile(response.accessToken);
-                document.getElementById('fetchRawJson').style.display = 'block';  // Show Fetch Raw JSON button
-            }).catch(error => {
-                console.error('Login error:', error);
-            });
-        });
-
-        document.getElementById('fetchRawJson').addEventListener('click', () => {
-            fetchRawJson();  // Call function from ewsCalls.js
-        });
-
-        function fetchProfile(token) {
-            fetch('https://graph.microsoft.com/v1.0/me', {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Failed to fetch profile');
-                }
-                return response.json();
-            })
-            .then(profile => {
-                document.getElementById('profile').innerText = JSON.stringify(profile, null, 2);
-            })
-            .catch(error => {
-                console.error('Error fetching profile:', error);
-            });
+        // Function to update the terminal
+        function updateTerminal(message) {
+            const terminal = document.getElementById('terminal');
+            terminal.innerText += message + '\n';
+            terminal.scrollTop = terminal.scrollHeight;
         }
+
+        // Microsoft Sign-in
+        document.getElementById('loginMicrosoft').addEventListener('click', () => {
+            msalInstance.loginPopup({
+                scopes: ["User.ReadWrite", "User.ReadWrite.All"]
+            }).then(response => {
+                console.log('Microsoft login response:', response);
+                updateTerminal('Signed in with Microsoft.');
+                // Store the access token on the server
+                fetch('/storeMsToken', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ msAccessToken: response.accessToken })
+                })
+                .then(res => res.text())
+                .then(data => {
+                    updateTerminal(data);
+                })
+                .catch(error => {
+                    console.error('Error storing Microsoft access token:', error);
+                    updateTerminal('Error storing Microsoft access token: ' + error.message);
+                });
+            }).catch(error => {
+                console.error('Microsoft login error:', error);
+                updateTerminal('Microsoft login error: ' + error.message);
+            });
+        });
+
+        // LinkedIn Sign-in
+        document.getElementById('loginLinkedIn').addEventListener('click', () => {
+            updateTerminal('Signing in with LinkedIn...');
+            const width = 600;
+            const height = 600;
+            const left = (screen.width / 2) - (width / 2);
+            const top = (screen.height / 2) - (height / 2);
+
+            fetch('/auth/linkedin')
+                .then(response => response.json())
+                .then(data => {
+                    const authWindow = window.open(data.authURL, 'LinkedIn Login', `width=${width},height=${height},top=${top},left=${left}`);
+
+                    // Define callback functions
+                    window.linkedinAuthSuccess = function () {
+                        updateTerminal('Signed in with LinkedIn.');
+                    };
+
+                    window.linkedinAuthFailure = function (message) {
+                        updateTerminal('LinkedIn login error: ' + message);
+                    };
+                })
+                .catch(error => {
+                    console.error('Error initiating LinkedIn login:', error);
+                    updateTerminal('Error initiating LinkedIn login: ' + error.message);
+                });
+        });
+
+        // Get LinkedIn Data
+        document.getElementById('getLinkedInData').addEventListener('click', () => {
+            updateTerminal('Fetching LinkedIn data...');
+            fetch('/fetchLinkedInData')
+                .then(response => response.text())
+                .then(data => {
+                    updateTerminal(data);
+                })
+                .catch(error => {
+                    console.error('Error fetching LinkedIn data:', error);
+                    updateTerminal('Error fetching LinkedIn data: ' + error.message);
+                });
+        });
+
+        // Process LinkedIn Data
+        document.getElementById('processData').addEventListener('click', () => {
+            updateTerminal('Processing LinkedIn data with LLM...');
+            fetch('/processLLMData')
+                .then(response => response.text())
+                .then(data => {
+                    updateTerminal(data);
+                })
+                .catch(error => {
+                    console.error('Error processing data with LLM:', error);
+                    updateTerminal('Error processing data with LLM: ' + error.message);
+                });
+        });
+
+        // Update Microsoft Profile
+        document.getElementById('updateProfile').addEventListener('click', () => {
+            updateTerminal('Updating Microsoft profile...');
+            fetch('/updateProfile', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({})
+            })
+                .then(response => response.text())
+                .then(data => {
+                    updateTerminal(data);
+                })
+                .catch(error => {
+                    console.error('Error updating profile:', error);
+                    updateTerminal('Error updating profile: ' + error.message);
+                });
+        });
     </script>
 </body>
 </html>

@@ -1,0 +1,26 @@
+Based on the provided LinkedIn data, here are the relevant information that could be used for the Company Profile and normalized to fit the format of a POST/PATCH request to the Microsoft Graph profile service at https://graph.microsoft.com/beta/me/profile:
+
+**Normalized JSON Object:**
+```json
+{
+  "company": {
+    "name": "Microsoft"
+  },
+  "verified": {
+    "date": "2023-04-28",
+    "serviceProvider": null,
+    "type": "Work Verification"
+  }
+}
+```
+
+I extracted the following information:
+
+* **Company Name**: Microsoft
+* **Verification Details**:
+	+ **Date Verified**: 2023-04-28
+	+ **Verification Type**: Work Verification
+
+Note that I didn't include any personal information from the LinkedIn data, as it's not relevant for a Company Profile. Also, I kept some fields empty (e.g., `serviceProvider`) since they were marked as "N/A" in the original LinkedIn data.
+
+Please note that this is just an example normalization and might need to be adjusted based on the actual requirements of the Microsoft Graph profile service at https://graph.microsoft.com/beta/me/profile.
