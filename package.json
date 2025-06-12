@@ -8,11 +8,11 @@
   "dependencies": {
     "@azure/msal-browser": "^3.21.0",
     "axios": "^1.7.7",
-    "body-parser": "^1.20.2",
+    "body-parser": "^1.20.3",
     "dotenv": "^16.4.5",
     "ejs": "^3.1.9",
-    "express": "^4.19.2",
-    "express-session": "^1.17.3",
+    "express": "^4.21.2",
+    "express-session": "^1.18.1",
     "fs": "^0.0.1-security",
     "path": "^0.12.7",
     "util": "^0.12.5"
